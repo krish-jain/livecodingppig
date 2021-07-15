@@ -1,0 +1,131 @@
+<html>
+<head>
+  <script src="/static/socket.io.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <style type="text/css">
+    body {
+    font-family: sans-serif; background: #eee;
+    }
+    body {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+<h1 style = "font-family:georgia,garamond,serif;font-size:35px;font-weight:300px;">Text Editor for Live Coding</h1>
+
+<script>
+var socket = io.connect('127.0.0.1:5000/session');
+function refresh() {
+  socket.emit("update", document.getElementById("editor").value);
+}
+function refreshcovid() {
+  socket.emit("updatecovid", document.getElementById("editorcovid").value);
+}
+function initial(){
+  socket.emit("getinitinfo");
+}
+function initialcovid(){
+  socket.emit("getinitinfocovid");
+}
+socket.on('successcovid', function(data) {
+  document.getElementById('editorcovid').value=data;
+  alert("Successfully saved COVID");
+})
+socket.on('success', function(data) {
+  document.getElementById('editor').value=data;
+  alert("Successfully saved");
+})
+
+socket.on('refreshinginit', function(data) {
+  console.log(data);
+  document.getElementById('editor').value=data;
+})
+
+socket.on('refreshinginitcovid', function(data) {
+  document.getElementById('editorcovid').value=data;
+})
+
+function hiding() {
+  var x = document.getElementById("observer");
+  x.style.display = "none";
+  var y = document.getElementById("coder");
+  y.style.display = "none";
+}
+function nothiding(){
+  var y = document.getElementById("coder");
+  y.style.display = "none";
+  var x = document.getElementById("observer");
+  x.style.display = "none";
+  var z = document.getElementById("refresh");
+  z.style.display = "block";
+  // var a = document.getElementById("refreshcovid");
+  // a.style.display = "block";
+}
+function hidesave(){
+  var x = document.getElementById("refresh");
+  x.style.display="none";
+  // var y = document.getElementById("refreshcovid");
+  // y.style.display="none";
+  initial();
+  initialcovid();
+}
+socket.on('problem_state', function(data) {
+ //alert("Trying to update the state display with... " + data['vis']);
+ parsing_string(data['state']);
+ console.log(data['state']);
+} )
+
+function parsing_string(text){
+  text=text.split(" ");
+  var finalArray=[];
+  for (i in text) {
+    var temp_string=text[i];
+    temp_string=parseInt(text[i]);
+    //debugger;
+    if(!isNaN(temp_string)){
+      finalArray.push(temp_string);
+    }
+  }
+  var eventsList=["The virus has mutated, the live-coder must adapt the\
+  SIR Model in cases_to_add to be exponential in nature", "The virus has been\
+  shown to have less impact on those who are aware they have the virus and\
+  are taking the neccessary precautions, please adapt the aware_cases_to_add\
+  function accordingly", "The doctors have been working overtime to treat\
+  those infected with the virus, please change the heal_people function to display\
+  their increased efforts."];
+  var turn_number=finalArray[finalArray.length-1];
+  // if(turn_number===1){
+  //   alert(eventsList[0]);
+  // }
+  var random=Math.floor((Math.random() * (eventsList.length)));
+  if(turn_number%5===0 && turn_number!==0){
+      alert(eventsList[random]);
+  }
+}
+window.onload=hidesave;
+</script>
+<button id="observer" onClick="hiding()" type="button" class="btn btn-info">Observer</button>
+<button id="coder" onClick="nothiding()" type="button" class="btn btn-info">Live Programmer</button>
+<br>
+<br>
+<textarea id="editor" name="editor" rows="30" cols="100">
+</textarea>
+<br> <br>
+<button id="refresh" onClick="refresh()" type="button" class="btn btn-info">Save</button>
+<br>
+<!-- COVID FILE TESTING -->
+<!-- <textarea id="editorcovid" name="editor" rows="30" cols="100">
+</textarea>
+<br> <br>
+<button id="refreshcovid" onClick="refreshcovid()" type="button" class="btn btn-info">Save COVID</button> -->
+
+</body>
+</html>
